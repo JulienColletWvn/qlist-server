@@ -1,0 +1,29 @@
+version: "3"
+services:
+  db:
+    container_name: qlist-db
+    image: "postgres:13"
+    restart: always
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    networks:
+      - qlist
+  server:
+    container_name: qlist-server
+    env_file:
+      - .env
+    build: .
+    ports:
+      - 8080:3000
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    networks:
+      - qlist
+networks:
+  qlist:
+    driver: bridge
