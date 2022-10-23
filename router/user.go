@@ -1,12 +1,14 @@
 package router
 
 import (
-	handler "qlist/handler/users"
+	handler "qlist/handler/user"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func User(r fiber.Router) {
+	r.Get("/", handler.GetUser)
+
 	events := r.Group("/events")
 	events.Post("/", handler.CreateEvent)
 	events.Get("/", handler.GetUserEvents)

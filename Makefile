@@ -7,4 +7,7 @@ start:
 stop:
 	docker-compose down
 
-.PHONY: start stop migrateup migratedown sqlc
+swagger:
+	swag init --parseDependency --parseInternal
+
+.PHONY: start stop swagger

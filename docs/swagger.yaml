@@ -1,0 +1,504 @@
+definitions:
+  entities.Event:
+    properties:
+      cashiers:
+        items:
+          $ref: '#/definitions/entities.User'
+        type: array
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      end_date:
+        type: string
+      free_wifi:
+        type: boolean
+      guests:
+        items:
+          $ref: '#/definitions/entities.Guest'
+        type: array
+      id:
+        type: integer
+      images:
+        items:
+          $ref: '#/definitions/entities.EventImage'
+        type: array
+      location:
+        type: string
+      name:
+        $ref: '#/definitions/entities.LocalisedTextContent'
+      products:
+        items:
+          $ref: '#/definitions/entities.EventProduct'
+        type: array
+      public:
+        type: boolean
+      sellers:
+        items:
+          $ref: '#/definitions/entities.User'
+        type: array
+      start_date:
+        type: string
+      ticketTypes:
+        items:
+          $ref: '#/definitions/entities.TicketType'
+        type: array
+      tickets_amount:
+        type: integer
+      updatedAt:
+        type: string
+      walletType:
+        items:
+          $ref: '#/definitions/entities.WalletType'
+        type: array
+    required:
+    - description
+    - end_date
+    - location
+    - name
+    - public
+    - start_date
+    type: object
+  entities.EventImage:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      eventID:
+        type: integer
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  entities.EventProduct:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      eventID:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      token_price:
+        type: integer
+      updatedAt:
+        type: string
+    required:
+    - name
+    - token_price
+    type: object
+  entities.Guest:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      firstname:
+        type: string
+      guestGroupID:
+        type: integer
+      id:
+        type: integer
+      lastname:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      tickets:
+        items:
+          $ref: '#/definitions/entities.Ticket'
+        type: array
+      updatedAt:
+        type: string
+      wallets:
+        items:
+          $ref: '#/definitions/entities.Wallet'
+        type: array
+    required:
+    - email
+    - password
+    type: object
+  entities.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: status bad request
+        type: string
+    type: object
+  entities.Language:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      languageID:
+        type: integer
+      languageType:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  entities.LocalisedTextContent:
+    properties:
+      contentID:
+        type: integer
+      contentType:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      translations:
+        items:
+          $ref: '#/definitions/entities.LocalisedTextTranslation'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  entities.LocalisedTextTranslation:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      language:
+        $ref: '#/definitions/entities.Language'
+      localisedTextContentID:
+        type: integer
+      updatedAt:
+        type: string
+    required:
+    - content
+    - language
+    type: object
+  entities.Ticket:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      guestID:
+        type: integer
+      id:
+        type: integer
+      ticketType:
+        $ref: '#/definitions/entities.TicketType'
+      ticketTypeID:
+        type: integer
+      transactions:
+        items:
+          $ref: '#/definitions/entities.TicketTransaction'
+        type: array
+      updatedAt:
+        type: string
+      uuid:
+        type: string
+    required:
+    - uuid
+    type: object
+  entities.TicketTransaction:
+    properties:
+      cashierID:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      quantity:
+        type: integer
+      ticketID:
+        type: integer
+      type:
+        type: string
+      updatedAt:
+        type: string
+    required:
+    - quantity
+    - type
+    type: object
+  entities.TicketType:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      end_validity_date:
+        type: string
+      eventID:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      quantity:
+        type: integer
+      start_validity_date:
+        type: string
+      unlimited:
+        type: boolean
+      updatedAt:
+        type: string
+    required:
+    - end_validity_date
+    - name
+    - start_validity_date
+    type: object
+  entities.Token:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      transactions:
+        items:
+          $ref: '#/definitions/entities.TokenTransaction'
+        type: array
+      updatedAt:
+        type: string
+      uuid:
+        type: string
+      walletID:
+        type: integer
+    required:
+    - uuid
+    type: object
+  entities.TokenTransaction:
+    properties:
+      amount:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      sellerID:
+        type: integer
+      status:
+        type: string
+      tokenID:
+        type: integer
+      updatedAt:
+        type: string
+    required:
+    - amount
+    - status
+    type: object
+  entities.User:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      events:
+        items:
+          $ref: '#/definitions/entities.Event'
+        type: array
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      ticketTransaction:
+        items:
+          $ref: '#/definitions/entities.TicketTransaction'
+        type: array
+      tokenTransaction:
+        items:
+          $ref: '#/definitions/entities.TokenTransaction'
+        type: array
+      updatedAt:
+        type: string
+      username:
+        maxLength: 32
+        minLength: 3
+        type: string
+      walletTransaction:
+        items:
+          $ref: '#/definitions/entities.WalletTransaction'
+        type: array
+    required:
+    - email
+    - firstname
+    - lastname
+    - password
+    - username
+    type: object
+  entities.Wallet:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      guestID:
+        type: integer
+      id:
+        type: integer
+      tokens:
+        items:
+          $ref: '#/definitions/entities.Token'
+        type: array
+      updatedAt:
+        type: string
+      walletType:
+        $ref: '#/definitions/entities.WalletType'
+      walletTypeID:
+        type: integer
+    type: object
+  entities.WalletPricing:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      quantity:
+        type: integer
+      type:
+        type: string
+      unit_price:
+        type: number
+      updatedAt:
+        type: string
+      walletTypeID:
+        type: integer
+    required:
+    - quantity
+    - type
+    - unit_price
+    type: object
+  entities.WalletTransaction:
+    properties:
+      cashierID:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      quantity:
+        type: integer
+      type:
+        type: string
+      updatedAt:
+        type: string
+      walletPricing:
+        $ref: '#/definitions/entities.WalletPricing'
+      walletPricingID:
+        type: integer
+    required:
+    - quantity
+    - type
+    type: object
+  entities.WalletType:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      end_validity_date:
+        type: string
+      eventID:
+        type: integer
+      id:
+        type: integer
+      max_amount:
+        type: integer
+      name:
+        type: string
+      online_reload:
+        type: boolean
+      start_validity_date:
+        type: string
+      updatedAt:
+        type: string
+      walletPricings:
+        items:
+          $ref: '#/definitions/entities.WalletPricing'
+        type: array
+    required:
+    - end_validity_date
+    - max_amount
+    - name
+    - start_validity_date
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /users/{id}:
+    get:
+      description: get user with current sessions
+      parameters:
+      - description: Authentication token
+        in: header
+        name: auth
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/entities.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.HTTPError'
+      summary: Get current urser data
+      tags:
+      - users
+swagger: "2.0"

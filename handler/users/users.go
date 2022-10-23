@@ -2,7 +2,6 @@ package handler
 
 import (
 	"qlist/db/entities"
-	jwtauth "qlist/middleware"
 	"qlist/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,17 +17,4 @@ func GetUsers(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(users)
-}
-
-func GetUser(c *fiber.Ctx) error {
-	var user entities.User
-	userId, err := jwtauth.GetCurrentUserId(c)
-
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(err)
-	}
-
-	utils.Database.Where("id=?", userId).First(&user)
-
-	return c.Status(fiber.StatusOK).JSON(user)
 }

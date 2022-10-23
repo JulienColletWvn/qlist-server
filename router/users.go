@@ -8,5 +8,4 @@ import (
 
 func Users(r fiber.Router) {
 	r.Get("/", handler.GetUsers)
-	r.Get("/:userId", handler.GetUser)
 }

@@ -13,8 +13,8 @@ func SetupRoutes(app *fiber.App) {
 	Authentication(auth)
 
 	api := app.Group("/api", authMiddleware)
-	users := api.Group("/users")
 	user := api.Group("/user")
+	users := api.Group("/users")
 	events := api.Group("/events")
 
 	User(user)
