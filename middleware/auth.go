@@ -2,6 +2,7 @@ package jwtauth
 
 import (
 	"errors"
+	"qlist/db/entities"
 	"qlist/utils"
 	"strconv"
 	"time"
@@ -68,7 +69,10 @@ func configDefault(config ...Config) Config {
 
 	if cfg.Unauthorized == nil {
 		cfg.Unauthorized = func(c *fiber.Ctx) error {
-			return c.SendStatus(fiber.StatusUnauthorized)
+			return c.Status(fiber.StatusUnauthorized).JSON(entities.HTTPError{
+				Code:    401,
+				Message: "Unautorized",
+			})
 		}
 	}
 

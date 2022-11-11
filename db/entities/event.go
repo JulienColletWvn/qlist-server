@@ -8,21 +8,21 @@ import (
 
 type Event struct {
 	gorm.Model
-	Name          LocalisedTextContent `json:"name" gorm:"polymorphic:Content" validate:"required"`
-	Description   string               `json:"description" gorm:"not null" validate:"required"`
-	StartDate     *time.Time           `json:"start_date" gorm:"not null" validate:"required"`
-	EndDate       *time.Time           `json:"end_date" gorm:"not null" validate:"required"`
-	Location      string               `json:"location" gorm:"not null" validate:"required"`
-	FreeWifi      bool                 `json:"free_wifi"`
-	Public        bool                 `json:"public" gorm:"not null" validate:"required"`
-	TicketsAmount int                  `json:"tickets_amount"`
-	Images        []EventImage
-	Products      []EventProduct
-	Cashiers      []User  `gorm:"many2many:events_cashiers"`
-	Sellers       []User  `gorm:"many2many:events_sellers"`
-	Guests        []Guest `gorm:"many2many:events_guests"`
-	TicketTypes   []TicketType
-	WalletType    []WalletType
+	Content       []LocalisedTextContent `json:"content" gorm:"polymorphic:Content" validate:"required"`
+	StartDate     *time.Time             `json:"start_date" gorm:"not null" validate:"required"`
+	EndDate       *time.Time             `json:"end_date" gorm:"not null" validate:"required"`
+	Location      string                 `json:"location" gorm:"not null" validate:"required"`
+	FreeWifi      bool                   `json:"free_wifi"`
+	Public        bool                   `json:"public" gorm:"not null"`
+	TicketsAmount int                    `json:"tickets_amount"`
+	Status        string                 `json:"status"`
+	Images        []EventImage           `json:"images"`
+	Products      []EventProduct         `json:"products"`
+	Cashiers      []User                 `json:"cashiers" gorm:"many2many:events_cashiers"`
+	Sellers       []User                 `json:"sellers" gorm:"many2many:events_sellers"`
+	Guests        []Guest                `json:"guests" gorm:"many2many:events_guests"`
+	TicketTypes   []TicketType           `json:"tickets"`
+	WalletTypes   []WalletType           `json:"wallets"`
 }
 
 type EventImage struct {

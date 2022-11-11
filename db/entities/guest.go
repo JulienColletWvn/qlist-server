@@ -4,14 +4,10 @@ import "gorm.io/gorm"
 
 type Guest struct {
 	gorm.Model
-	Email        string `json:"email" gorm:"not null" validate:"required,email"`
-	Password     string `json:"password" gorm:"not null" validate:"required"`
-	Firstname    string `json:"firstname"`
-	Lastname     string `json:"lastname"`
-	Phone        string `json:"phone"`
-	Wallets      []Wallet
-	Tickets      []Ticket
-	GuestGroupID uint
+	ContactID uint
+	Contact   Contact
+	Wallets   []Wallet `json:"wallets"`
+	Tickets   []Ticket `json:"tickets"`
 }
 
 type GuestGroup struct {

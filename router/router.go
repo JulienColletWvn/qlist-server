@@ -8,12 +8,12 @@ import (
 
 func SetupRoutes(app *fiber.App) {
 	authMiddleware := jwtauth.New(jwtauth.Config{})
+	api := app.Group("/api")
 
-	auth := app.Group("/auth")
+	auth := api.Group("/auth")
 	Authentication(auth)
 
-	api := app.Group("/api", authMiddleware)
-	user := api.Group("/user")
+	user := api.Group("/user", authMiddleware)
 	users := api.Group("/users")
 	events := api.Group("/events")
 

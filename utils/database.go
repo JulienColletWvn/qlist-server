@@ -16,7 +16,7 @@ func Connect() error {
 	env := GetEnvVariable
 	dsn := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable TimeZone=Europe/Brussels",
-		"localhost", 5432, env("POSTGRES_USER"), env("POSTGRES_PASSWORD"), env("POSTGRES_DB"))
+		"db", 5432, env("POSTGRES_USER"), env("POSTGRES_PASSWORD"), env("POSTGRES_DB"))
 
 	Database, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
@@ -40,9 +40,8 @@ func Connect() error {
 		&entities.Ticket{},
 		&entities.TicketType{},
 		&entities.TicketTransaction{},
-		&entities.Language{},
 		&entities.LocalisedTextContent{},
-		&entities.LocalisedTextTranslation{},
+		&entities.Contact{},
 	)
 
 	return nil

@@ -8,6 +8,7 @@ type User struct {
 	Firstname         string              `json:"firstname" gorm:"not null" validate:"required"`
 	Lastname          string              `json:"lastname" gorm:"not null" validate:"required"`
 	Phone             string              `json:"phone"`
+	Contacts          []Contact           `json:"contacts"`
 	Events            []Event             `gorm:"many2many:user_events"`
 	TicketTransaction []TicketTransaction `gorm:"foreignKey:CashierID"`
 	WalletTransaction []WalletTransaction `gorm:"foreignKey:CashierID"`

@@ -7,7 +7,11 @@ import (
 )
 
 func User(r fiber.Router) {
-	r.Get("/", handler.GetUser)
+	r.Get("/", handler.GetUserContacts)
+
+	contacts := r.Group("/contacts")
+	contacts.Post("/", handler.CreateContact)
+	contacts.Get("/", handler.GetUserContacts)
 
 	events := r.Group("/events")
 	events.Post("/", handler.CreateEvent)
@@ -15,4 +19,5 @@ func User(r fiber.Router) {
 	events.Get("/:eventId", handler.GetUserEvent)
 	events.Put("/:eventId", handler.UpdateUserEvent)
 	events.Delete("/:eventId", handler.DeleteUserEvent)
+	events.Post("/:eventId/guests", handler.CreateGuest)
 }

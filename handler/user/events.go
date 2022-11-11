@@ -50,7 +50,7 @@ func GetUserEvent(c *fiber.Ctx) error {
 	}
 
 	utils.Database.Where("id=?", userId).First(&user)
-	utils.Database.Model(&user).Where("id=?", eventId).Association("Events").Find(&event)
+	utils.Database.Model(&user).Preload("Content").Preload("Guests").Preload("Guests.Contact").Preload("TicketTypes").Preload("Cashiers").Preload("Sellers").Preload("Products").Preload("Images").Preload("WalletTypes").Where("id=?", eventId).Association("Events").Find(&event)
 
 	if event.ID == 0 {
 		return c.SendStatus(fiber.StatusNotFound)
@@ -71,7 +71,7 @@ func GetUserEvents(c *fiber.Ctx) error {
 
 	utils.Database.Where("id=?", userId).First(&user)
 
-	utils.Database.Model(&user).Association("Events").Find(&events)
+	utils.Database.Model(&user).Preload("Content").Association("Events").Find(&events)
 
 	return c.Status(fiber.StatusOK).JSON(events)
 }
