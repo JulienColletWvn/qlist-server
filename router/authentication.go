@@ -7,7 +7,7 @@ import (
 )
 
 func Authentication(r fiber.Router) {
-	r.Post("/register", handler.CreateUser)
-	r.Post("/login", handler.GetUser)
+	r.Post("/register", handler.Register)
+	r.Post("/login", handler.Login)
 	r.Get("/logout", handler.Logout)
 }

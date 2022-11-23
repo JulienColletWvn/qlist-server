@@ -1,48 +1,26 @@
 package utils
 
 import (
+	"database/sql"
 	"fmt"
-	"qlist/db/entities"
+	"log"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	_ "github.com/lib/pq"
 )
 
-var Database *gorm.DB
+var Database *sql.DB
 
 func Connect() error {
 	var err error
 
-	env := GetEnvVariable
-	dsn := fmt.Sprintf("host=%s port=%d user=%s "+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable TimeZone=Europe/Brussels",
-		"db", 5432, env("POSTGRES_USER"), env("POSTGRES_PASSWORD"), env("POSTGRES_DB"))
-
-	Database, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		"localhost", 5432, GetEnvVariable("POSTGRES_USER"), GetEnvVariable("POSTGRES_PASSWORD"), GetEnvVariable("POSTGRES_DB"))
+	Database, err = sql.Open("postgres", psqlInfo)
 
 	if err != nil {
-		panic(err)
+		log.Fatal("Connection with DB failed")
 	}
-
-	Database.AutoMigrate(
-		&entities.User{},
-		&entities.Event{},
-		&entities.EventImage{},
-		&entities.EventProduct{},
-		&entities.GuestGroup{},
-		&entities.Guest{},
-		&entities.Wallet{},
-		&entities.WalletType{},
-		&entities.WalletPricing{},
-		&entities.WalletTransaction{},
-		&entities.Token{},
-		&entities.TokenTransaction{},
-		&entities.Ticket{},
-		&entities.TicketType{},
-		&entities.TicketTransaction{},
-		&entities.LocalisedTextContent{},
-		&entities.Contact{},
-	)
 
 	return nil
 }

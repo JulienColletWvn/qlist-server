@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"qlist/db/entities"
+	"context"
+	db "qlist/db/sqlc"
 	jwtauth "qlist/middleware"
 	"qlist/utils"
 	"regexp"
@@ -18,10 +19,24 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func CreateUser(c *fiber.Ctx) error {
-	user := new(entities.User)
+type User struct {
+	Username  string `json:"username" validate:"required,min=3,max=32"`
+	Email     string `json:"email" validate:"required,email"`
+	Firstname string `json:"firstname" validate:"required"`
+	Lastname  string `json:"lastname" validate:"required"`
+	Phone     string `json:"phone"`
+}
 
-	if err := c.BodyParser(user); err != nil {
+type CreateUserParams struct {
+	User
+	Password string `json:"password" validate:"required"`
+}
+
+func Register(c *fiber.Ctx) error {
+	ctx := context.Background()
+	user := CreateUserParams{}
+
+	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
 	}
 
@@ -32,23 +47,34 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't hash password", "data": err})
 	}
 
-	if err := utils.ValidateStruct(*user); err != nil {
+	if err := utils.ValidateStruct(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 
-	creationError := utils.Database.Create(&user).Error
+	queries := db.New(utils.Database)
 
-	userAlreayExists, _ := regexp.MatchString("duplicate key value violates unique constraint \"users_email_key\"", creationError.Error())
+	u, err := queries.CreateUser(ctx, db.CreateUserParams{
+		Username:  user.Username,
+		Password:  hash,
+		Phone:     user.Phone,
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+		Email:     user.Email,
+	})
 
-	if userAlreayExists {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(utils.ApiError{
-			Code: 1001,
-			Text: "User already exists",
-		})
+	if err != nil {
+		userAlreayExists, _ := regexp.MatchString("duplicate key value violates unique constraint \"idx_users_email\"", err.Error())
+		if userAlreayExists {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(utils.ApiError{
+				Code: 1001,
+				Text: "User already exists",
+			})
+		}
+		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 
 	token, err := jwtauth.Encode(&jwt.StandardClaims{
-		Subject:   strconv.Itoa(int(user.ID)),
+		Subject:   strconv.Itoa(int(u.ID)),
 		ExpiresAt: time.Now().UTC().Unix() + 24*60*100,
 	})
 
@@ -61,6 +87,12 @@ func CreateUser(c *fiber.Ctx) error {
 
 	c.Cookie(&cookie)
 
-	return c.Status(fiber.StatusOK).JSON(user)
+	return c.Status(fiber.StatusOK).JSON(User{
+		Username:  u.Username,
+		Lastname:  u.Lastname,
+		Firstname: u.Firstname,
+		Email:     u.Email,
+		Phone:     u.Phone,
+	})
 
 }

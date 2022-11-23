@@ -1,61 +1,54 @@
 package handler
 
-import (
-	"qlist/db/entities"
-	"qlist/utils"
+// func CreateGuest(c *fiber.Ctx) error {
+// 	event := new(entities.Event)
 
-	"github.com/gofiber/fiber/v2"
-)
+// 	if err := c.BodyParser(event); err != nil {
+// 		return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
+// 	}
 
-func CreateGuest(c *fiber.Ctx) error {
-	event := new(entities.Event)
+// 	if err := utils.ValidateStruct(*event); err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(err)
+// 	}
 
-	if err := c.BodyParser(event); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
-	}
+// 	utils.Database.Create(&event)
 
-	if err := utils.ValidateStruct(*event); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(err)
-	}
+// 	return c.Status(fiber.StatusOK).JSON(event)
 
-	utils.Database.Create(&event)
+// }
 
-	return c.Status(fiber.StatusOK).JSON(event)
+// func UpdateGuest(c *fiber.Ctx) error {
+// 	var users []entities.User
 
-}
+// 	res := utils.Database.Find(&users)
 
-func UpdateGuest(c *fiber.Ctx) error {
-	var users []entities.User
+// 	if res.Error != nil {
+// 		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
+// 	}
 
-	res := utils.Database.Find(&users)
+// 	return c.Status(fiber.StatusOK).JSON(users)
+// }
 
-	if res.Error != nil {
-		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
-	}
+// func DeleteGuest(c *fiber.Ctx) error {
+// 	var users []entities.User
 
-	return c.Status(fiber.StatusOK).JSON(users)
-}
+// 	res := utils.Database.Find(&users)
 
-func DeleteGuest(c *fiber.Ctx) error {
-	var users []entities.User
+// 	if res.Error != nil {
+// 		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
+// 	}
 
-	res := utils.Database.Find(&users)
+// 	return c.Status(fiber.StatusOK).JSON(users)
+// }
 
-	if res.Error != nil {
-		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
-	}
+// func GetGuest(c *fiber.Ctx) error {
+// 	var users []entities.User
 
-	return c.Status(fiber.StatusOK).JSON(users)
-}
+// 	res := utils.Database.Find(&users)
 
-func GetGuest(c *fiber.Ctx) error {
-	var users []entities.User
+// 	if res.Error != nil {
+// 		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
+// 	}
 
-	res := utils.Database.Find(&users)
-
-	if res.Error != nil {
-		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
-	}
-
-	return c.Status(fiber.StatusOK).JSON(users)
-}
+// 	return c.Status(fiber.StatusOK).JSON(users)
+// }

@@ -1,20 +1,13 @@
 package handler
 
-import (
-	"qlist/db/entities"
-	"qlist/utils"
+// func GetUsers(c *fiber.Ctx) error {
+// 	var users []entities.User
 
-	"github.com/gofiber/fiber/v2"
-)
+// 	res := utils.Database.Find(&users)
 
-func GetUsers(c *fiber.Ctx) error {
-	var users []entities.User
+// 	if res.Error != nil {
+// 		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
+// 	}
 
-	res := utils.Database.Find(&users)
-
-	if res.Error != nil {
-		c.Status(fiber.StatusInternalServerError).SendString(res.Error.Error())
-	}
-
-	return c.Status(fiber.StatusOK).JSON(users)
-}
+// 	return c.Status(fiber.StatusOK).JSON(users)
+// }

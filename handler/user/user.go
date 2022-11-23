@@ -1,15 +1,17 @@
 package handler
 
 import (
-	"qlist/db/entities"
+	"context"
+	db "qlist/db/sqlc"
 	jwtauth "qlist/middleware"
 	"qlist/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type User struct {
+type UserResponse struct {
 	Username  string `json:"username"`
+	CreatedAt string `json:"createdAt"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 	Email     string `json:"email"`
@@ -28,20 +30,27 @@ type User struct {
 // @Failure     500  {object} entities.HTTPError
 // @Router      /users/{id} [get]
 func GetUser(c *fiber.Ctx) error {
-	var user entities.User
+	ctx := context.Background()
 	userId, err := jwtauth.GetCurrentUserId(c)
 
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(err)
 	}
 
-	utils.Database.Where("id=?", userId).First(&user)
+	queries := db.New(utils.Database)
 
-	return c.Status(fiber.StatusOK).JSON(User{
-		Username:  user.Username,
-		Firstname: user.Firstname,
-		Lastname:  user.Lastname,
-		Email:     user.Email,
-		Phone:     user.Phone,
+	u, err := queries.GetUserById(ctx, int32(userId))
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(UserResponse{
+		Firstname: u.Firstname,
+		Lastname:  u.Lastname,
+		Phone:     u.Phone,
+		Email:     u.Email,
+		Username:  u.Username,
+		CreatedAt: u.CreatedAt.Time.UTC().String(),
 	})
 }

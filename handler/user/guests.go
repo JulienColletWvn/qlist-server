@@ -1,54 +1,46 @@
 package handler
 
-import (
-	"qlist/db/entities"
-	jwtauth "qlist/middleware"
-	"qlist/utils"
+// type GuestParams struct {
+// 	ContactID int `json:"contactId"`
+// }
 
-	"github.com/gofiber/fiber/v2"
-)
+// func CreateGuest(c *fiber.Ctx) error {
+// 	params := GuestParams{}
+// 	user := entities.User{}
+// 	event := entities.Event{}
+// 	contact := entities.Contact{}
 
-type GuestParams struct {
-	ContactID int `json:"contactId"`
-}
+// 	eventId := c.AllParams()["eventId"]
 
-func CreateGuest(c *fiber.Ctx) error {
-	params := GuestParams{}
-	user := entities.User{}
-	event := entities.Event{}
-	contact := entities.Contact{}
+// 	userId, err := jwtauth.GetCurrentUserId(c)
 
-	eventId := c.AllParams()["eventId"]
+// 	if err != nil {
+// 		return c.Status(fiber.StatusUnauthorized).JSON(err)
+// 	}
 
-	userId, err := jwtauth.GetCurrentUserId(c)
+// 	if err := c.BodyParser(&params); err != nil {
+// 		return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
+// 	}
 
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(err)
-	}
+// 	if eventId == "" {
+// 		return c.SendStatus(fiber.StatusBadRequest)
+// 	}
 
-	if err := c.BodyParser(&params); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).SendString(err.Error())
-	}
+// 	utils.Database.Where("id=?", userId).First(&user)
+// 	utils.Database.Model(&user).Association("Events").Find(&event)
 
-	if eventId == "" {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
+// 	utils.Database.Model(&user).Where("id=?", params.ContactID).Association("Contacts").Find(&contact)
 
-	utils.Database.Where("id=?", userId).First(&user)
-	utils.Database.Model(&user).Association("Events").Find(&event)
+// 	guest := entities.Guest{
+// 		ContactID: contact.ID,
+// 	}
 
-	utils.Database.Model(&user).Where("id=?", params.ContactID).Association("Contacts").Find(&contact)
+// 	e := utils.Database.Model(&event).Association("Guests").Append(&guest)
 
-	guest := entities.Guest{
-		ContactID: contact.ID,
-	}
+// 	if e != nil {
+// 		return c.SendStatus(fiber.StatusBadRequest)
+// 	}
 
-	e := utils.Database.Model(&event).Association("Guests").Append(&guest)
+// 	return c.Status(fiber.StatusOK).JSON(&guest)
 
-	if e != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	return c.Status(fiber.StatusOK).JSON(&guest)
-
-}
+// }

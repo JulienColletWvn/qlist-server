@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"qlist/db/entities"
+	"context"
+	db "qlist/db/sqlc"
 	jwtauth "qlist/middleware"
 	"qlist/utils"
 	"strconv"
@@ -12,8 +13,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetUser(c *fiber.Ctx) error {
-
+func Login(c *fiber.Ctx) error {
+	ctx := context.Background()
 	var data map[string]string
 
 	err := c.BodyParser(&data)
@@ -21,11 +22,11 @@ func GetUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	user := new(entities.User)
+	queries := db.New(utils.Database)
 
-	utils.Database.Where("email=?", data["email"]).First(&user)
+	user, err := queries.GetUserByEmail(ctx, data["email"])
 
-	if user.ID == 0 {
+	if user.ID == 0 || err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"message": "user not found",
 		})

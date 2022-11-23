@@ -27,5 +27,5 @@ func main() {
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	router.SetupRoutes(app)
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(":3001"))
 }
