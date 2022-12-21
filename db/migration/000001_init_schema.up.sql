@@ -6,7 +6,7 @@ CREATE TABLE "users" (
   "created_at" TIMESTAMPTZ DEFAULT (now()),
   "updated_at" TIMESTAMPTZ DEFAULT (now()),
   "username" varchar(30) NOT NULL,
-  "email" varchar(30) NOT NULL,
+  "email" varchar(30) UNIQUE NOT NULL,
   "password" text NOT NULL,
   "firstname" varchar(30) NOT NULL,
   "lastname" varchar(30) NOT NULL,
@@ -46,6 +46,12 @@ CREATE TABLE "guests_groups_types" (
   "events_id" int NOT NULL,
   "group_name" varchar(30) NOT NULL,
   "group_color" varchar(7) DEFAULT NULL
+);
+CREATE TABLE "stewards" (
+  "id" SERIAL PRIMARY KEY,
+  "created_at" TIMESTAMPTZ DEFAULT (now()),
+  "contacts_id" int NOT NULL,
+  "events_id" int NOT NULL
 );
 CREATE TABLE "cashiers" (
   "id" SERIAL PRIMARY KEY,
@@ -93,29 +99,24 @@ CREATE TABLE "events_photos" (
   "events_id" int NOT NULL,
   "url" varchar(50) NOT NULL
 );
-CREATE TABLE "tokens_transactions" (
-  "id" SERIAL PRIMARY KEY,
-  "created_at" TIMESTAMPTZ DEFAULT (now()),
-  "updated_at" TIMESTAMPTZ DEFAULT (now()),
-  "transaction_date" TIMESTAMPTZ NOT NULL,
-  "amount" int NOT NULL,
-  "online_sell" boolean NOT NULL,
-  "cashiers_id" int NOT NULL,
-  "sellers_id" int NOT NULL,
-  "tokens_id" int NOT NULL,
-  "events_products_id" int NOT NULL,
-  "status" transaction_status NOT NULL
-);
-CREATE TABLE "tokens" (
-  "id" SERIAL PRIMARY KEY,
-  "uuid" varchar(50) NOT NULL,
-  "wallets_id" int NOT NULL
-);
 CREATE TABLE "wallets" (
   "id" SERIAL PRIMARY KEY,
   "created_at" TIMESTAMPTZ DEFAULT (now()),
   "guests_id" int NOT NULL,
-  "wallets_type_id" int NOT NULL
+  "wallets_type_id" int NOT NULL,
+  "token" varchar(50) NOT NULL,
+  "balance" int
+);
+CREATE TABLE "wallets_transactions" (
+  "id" SERIAL PRIMARY KEY,
+  "created_at" TIMESTAMPTZ DEFAULT (now()),
+  "updated_at" TIMESTAMPTZ DEFAULT (now()),
+  "amount" int NOT NULL,
+  "online_sell" boolean NOT NULL,
+  "cashiers_id" int,
+  "sellers_id" int,
+  "events_products_id" int NOT NULL,
+  "status" transaction_status NOT NULL
 );
 CREATE TABLE "wallets_types" (
   "id" SERIAL PRIMARY KEY,
@@ -135,20 +136,10 @@ CREATE TABLE "wallets_pricings" (
   "unit_price" int NOT NULL,
   "wallets_type_id" int NOT NULL
 );
-CREATE TABLE "wallets_transactions" (
-  "id" SERIAL PRIMARY KEY,
-  "created_at" TIMESTAMPTZ DEFAULT (now()),
-  "cashiers_id" int NOT NULL,
-  "wallets_id" int NOT NULL,
-  "wallets_pricing_id" int NOT NULL,
-  "units_sold" int NOT NULL,
-  "status" transaction_status NOT NULL
-);
 CREATE TABLE "tickets" (
   "id" SERIAL PRIMARY KEY,
   "created_at" TIMESTAMPTZ DEFAULT (now()),
   "tickets_type_id" int NOT NULL,
-  "sellers_id" int NOT NULL,
   "guests_id" int NOT NULL
 );
 CREATE TABLE "tickets_types" (
@@ -166,6 +157,7 @@ CREATE TABLE "tickets_transactions" (
   "id" SERIAL PRIMARY KEY,
   "created_at" TIMESTAMPTZ DEFAULT (now()),
   "tickets_id" int NOT NULL,
+  "stewards_id" int NOT NULL,
   "amount" int NOT NULL,
   "status" transaction_status NOT NULL
 );
@@ -174,9 +166,15 @@ CREATE TABLE "events_products" (
   "created_at" TIMESTAMPTZ DEFAULT (now()),
   "updated_at" TIMESTAMPTZ DEFAULT (now()),
   "events_id" int NOT NULL,
-  "sellers_id" int NOT NULL,
   "name" varchar(30) NOT NULL,
   "tokens_amount_pricing" int NOT NULL
+);
+CREATE TABLE "events_products_sellers" (
+  "id" SERIAL PRIMARY KEY,
+  "created_at" TIMESTAMPTZ DEFAULT (now()),
+  "updated_at" TIMESTAMPTZ DEFAULT (now()),
+  "sellers_id" int NOT NULL,
+  "events_products_id" int NOT NULL
 );
 ALTER TABLE "contacts"
 ADD FOREIGN KEY ("creator_id") REFERENCES "users" ("id");
@@ -191,6 +189,10 @@ ADD FOREIGN KEY ("guests_groups_types_id") REFERENCES "guests_groups_types" ("id
 ALTER TABLE "guests_groups_types"
 ADD FOREIGN KEY ("creator_id") REFERENCES "users" ("id");
 ALTER TABLE "guests_groups_types"
+ADD FOREIGN KEY ("events_id") REFERENCES "events" ("id");
+ALTER TABLE "stewards"
+ADD FOREIGN KEY ("contacts_id") REFERENCES "contacts" ("id");
+ALTER TABLE "stewards"
 ADD FOREIGN KEY ("events_id") REFERENCES "events" ("id");
 ALTER TABLE "cashiers"
 ADD FOREIGN KEY ("contacts_id") REFERENCES "contacts" ("id");
@@ -210,41 +212,33 @@ ALTER TABLE "events_contents"
 ADD FOREIGN KEY ("events_id") REFERENCES "events" ("id");
 ALTER TABLE "events_photos"
 ADD FOREIGN KEY ("events_id") REFERENCES "events" ("id");
-ALTER TABLE "tokens_transactions"
-ADD FOREIGN KEY ("cashiers_id") REFERENCES "cashiers" ("id");
-ALTER TABLE "tokens_transactions"
-ADD FOREIGN KEY ("sellers_id") REFERENCES "sellers" ("id");
-ALTER TABLE "tokens_transactions"
-ADD FOREIGN KEY ("tokens_id") REFERENCES "tokens" ("id");
-ALTER TABLE "tokens_transactions"
-ADD FOREIGN KEY ("events_products_id") REFERENCES "events_products" ("id");
-ALTER TABLE "tokens"
-ADD FOREIGN KEY ("wallets_id") REFERENCES "wallets" ("id");
 ALTER TABLE "wallets"
 ADD FOREIGN KEY ("guests_id") REFERENCES "guests" ("id");
 ALTER TABLE "wallets"
 ADD FOREIGN KEY ("wallets_type_id") REFERENCES "wallets_types" ("id");
+ALTER TABLE "wallets_transactions"
+ADD FOREIGN KEY ("cashiers_id") REFERENCES "cashiers" ("id");
+ALTER TABLE "wallets_transactions"
+ADD FOREIGN KEY ("sellers_id") REFERENCES "sellers" ("id");
+ALTER TABLE "wallets_transactions"
+ADD FOREIGN KEY ("events_products_id") REFERENCES "events_products" ("id");
 ALTER TABLE "wallets_types"
 ADD FOREIGN KEY ("events_id") REFERENCES "events" ("id");
 ALTER TABLE "wallets_pricings"
 ADD FOREIGN KEY ("wallets_type_id") REFERENCES "wallets_types" ("id");
-ALTER TABLE "wallets_transactions"
-ADD FOREIGN KEY ("cashiers_id") REFERENCES "cashiers" ("id");
-ALTER TABLE "wallets_transactions"
-ADD FOREIGN KEY ("wallets_id") REFERENCES "wallets" ("id");
-ALTER TABLE "wallets_transactions"
-ADD FOREIGN KEY ("wallets_pricing_id") REFERENCES "wallets_pricings" ("id");
 ALTER TABLE "tickets"
 ADD FOREIGN KEY ("tickets_type_id") REFERENCES "tickets_types" ("id");
-ALTER TABLE "tickets"
-ADD FOREIGN KEY ("sellers_id") REFERENCES "sellers" ("id");
 ALTER TABLE "tickets"
 ADD FOREIGN KEY ("guests_id") REFERENCES "guests" ("id");
 ALTER TABLE "tickets_types"
 ADD FOREIGN KEY ("events_id") REFERENCES "events" ("id");
 ALTER TABLE "tickets_transactions"
 ADD FOREIGN KEY ("tickets_id") REFERENCES "tickets" ("id");
+ALTER TABLE "tickets_transactions"
+ADD FOREIGN KEY ("stewards_id") REFERENCES "stewards" ("id");
 ALTER TABLE "events_products"
 ADD FOREIGN KEY ("events_id") REFERENCES "events" ("id");
-ALTER TABLE "events_products"
+ALTER TABLE "events_products_sellers"
 ADD FOREIGN KEY ("sellers_id") REFERENCES "sellers" ("id");
+ALTER TABLE "events_products_sellers"
+ADD FOREIGN KEY ("events_products_id") REFERENCES "events_products" ("id");

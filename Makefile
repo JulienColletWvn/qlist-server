@@ -7,17 +7,20 @@ start:
 stop:
 	docker-compose down
 
+run:
+	go run main.go
+
 swagger:
 	swag init --parseDependency --parseInternal
 
 migrateup:
-	migrate -path db/migration -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_URL}:5432/${POSTGRES_DB}?sslmode=disable" -verbose up
+	migrate -path db/migration -database "${POSTGRES_URL}" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_URL}:5432/${POSTGRES_DB}?sslmode=disable" -verbose down
+	migrate -path db/migration -database "${POSTGRES_URL}" -verbose down
 
 sqlc:
 	sqlc generate
 
 
-.PHONY: start stop swagger migrateup migratedown sqlc
+.PHONY: start stop swagger migrateup migratedown sqlc run

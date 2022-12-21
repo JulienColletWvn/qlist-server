@@ -1,29 +1,29 @@
--- name: CreateUserEventSeller :one
-INSERT INTO sellers (events_id, contacts_id)
+-- name: CreateUserEventSteward :one
+INSERT INTO stewards (events_id, contacts_id)
 VALUES ($1, $2)
 RETURNING *;
--- name: DeleteUserEventSeller :exec
-DELETE FROM sellers
-WHERE sellers.id = $1
-    AND sellers.events_id IN (
+-- name: DeleteUserEventSteward :exec
+DELETE FROM stewards
+WHERE stewards.id = $1
+    AND stewards.events_id IN (
         SELECT events_administrators.events.id
         FROM events_administrators
         WHERE events_administrators.users_id = $2
     );
--- name: GetUserEventSeller :one
+-- name: GetUserEventSteward :one
 SELECT *
-FROM sellers
-WHERE sellers.id = $1
-    AND sellers.events_id IN (
+FROM stewards
+WHERE stewards.id = $1
+    AND stewards.events_id IN (
         SELECT events_administrators.events.id
         FROM events_administrators
         WHERE events_administrators.events_id = $2
             AND events_administrators.users_id = $3
     );
--- name: GetUserEventSellers :one
+-- name: GetUserEventStewards :one
 SELECT *
-FROM sellers
-WHERE sellers.events_id IN (
+FROM stewards
+WHERE stewards.events_id IN (
         SELECT events_administrators.events.id
         FROM events_administrators
         WHERE events_administrators.events_id = $1

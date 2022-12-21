@@ -1,25 +1,24 @@
 package utils
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"log"
+	"os"
+
+	"github.com/jackc/pgx/v4"
 
 	_ "github.com/lib/pq"
 )
 
-var Database *sql.DB
+var Database *pgx.Conn
 
 func Connect() error {
 	var err error
-
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable TimeZone=Europe/Brussels",
-		"localhost", 5432, GetEnvVariable("POSTGRES_USER"), GetEnvVariable("POSTGRES_PASSWORD"), GetEnvVariable("POSTGRES_DB"))
-	Database, err = sql.Open("postgres", psqlInfo)
+	Database, err = pgx.Connect(context.Background(), GetEnvVariable("POSTGRES_URL"))
 
 	if err != nil {
-		log.Fatal("Connection with DB failed")
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
 	}
 
 	return nil

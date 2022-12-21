@@ -18,17 +18,6 @@ type UserResponse struct {
 	Phone     string `json:"phone"`
 }
 
-// GetUser godoc
-// @Summary     Get current urser data
-// @Description get user with current sessions
-// @Tags        users
-// @Produce     json
-// @Param       auth header   int true "Authentication token"
-// @Success     200  {object} User
-// @Failure     401  {object} entities.HTTPError
-// @Failure     404  {object} entities.HTTPError
-// @Failure     500  {object} entities.HTTPError
-// @Router      /users/{id} [get]
 func GetUser(c *fiber.Ctx) error {
 	ctx := context.Background()
 	userId, err := jwtauth.GetCurrentUserId(c)

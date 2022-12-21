@@ -1,97 +1,128 @@
 package handler
 
-// func CreateContact(c *fiber.Ctx) error {
-// 	contact := entities.Contact{}
-// 	contacts := []entities.Contact{}
-// 	user := new(entities.User)
+import (
+	"context"
+	"database/sql"
+	db "qlist/db/sqlc"
+	jwtauth "qlist/middleware"
+	"qlist/utils"
+	"strconv"
 
-// 	userId, err := jwtauth.GetCurrentUserId(c)
+	"github.com/gofiber/fiber/v2"
+)
 
-// 	if err != nil {
-// 		return c.Status(fiber.StatusUnauthorized).JSON(err)
-// 	}
+type Contact struct {
+	Email     string `json:"email"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Phone     string `json:"phone"`
+	Lang      string `json:"lang"`
+}
 
-// 	parsingErr := c.BodyParser(&contact)
-// 	parsingMultipleError := c.BodyParser(&contacts)
+type ContactError struct {
+	Email string `json:"email"`
+	Error string `json:"error"`
+}
 
-// 	if parsingErr != nil || parsingMultipleError != nil {
-// 		c.SendStatus(fiber.StatusUnprocessableEntity)
-// 	}
+func CreateContacts(c *fiber.Ctx) error {
+	ctx := context.Background()
+	queries := db.New(utils.Database)
+	contacts := []Contact{}
+	contactsParams := []db.CreateUserContactsParams{}
+	userId, err := jwtauth.GetCurrentUserId(c)
 
-// 	if parsingMultipleError == nil {
-// 		errors := [][]*utils.ErrorResponse{}
-// 		for _, contact := range contacts {
-// 			if err := utils.ValidateStruct(&contact); err != nil {
-// 				errors = append(errors, err)
-// 			}
-// 		}
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(err)
+	}
 
-// 		if len(errors) > 0 {
-// 			return c.Status(fiber.StatusBadRequest).JSON(errors)
-// 		}
+	if err := c.BodyParser(&contacts); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
 
-// 		utils.Database.Create(&contacts)
-// 		utils.Database.Where("id=?", userId).First(&user)
+	for _, contact := range contacts {
+		contactsParams = append(contactsParams, db.CreateUserContactsParams{
+			Email:     contact.Email,
+			Firstname: contact.Firstname,
+			Lastname:  contact.Lastname,
+			Phone:     contact.Phone,
+			Lang: sql.NullString{
+				String: contact.Lang,
+				Valid:  true,
+			},
+			CreatorID: int32(userId),
+		})
+	}
 
-// 		utils.Database.Model(&user).Association("Contacts").Append(&contacts)
+	_, creationError := queries.CreateUserContacts(ctx, contactsParams)
 
-// 		return c.Status(fiber.StatusOK).JSON(contacts)
+	if creationError != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
 
-// 	}
+	return c.SendStatus(fiber.StatusOK)
+}
 
-// 	if err := utils.ValidateStruct(&contact); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(err)
-// 	}
+func GetUserContacts(c *fiber.Ctx) error {
+	ctx := context.Background()
+	userId, err := jwtauth.GetCurrentUserId(c)
+	queries := db.New(utils.Database)
 
-// 	utils.Database.Create(&contact)
-// 	utils.Database.Where("id=?", userId).First(&user)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(err)
+	}
 
-// 	utils.Database.Model(&user).Association("Contacts").Append(&contact)
+	contacts, err := queries.GetUserContacts(ctx, int32(userId))
 
-// 	return c.Status(fiber.StatusOK).JSON(contact)
-// }
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
 
-// func GetUserContacts(c *fiber.Ctx) error {
-// 	var user entities.User
-// 	var contacts []entities.Contact
+	return c.Status(fiber.StatusOK).JSON(contacts)
 
-// 	userId, err := jwtauth.GetCurrentUserId(c)
+}
 
-// 	if err != nil {
-// 		return c.Status(fiber.StatusUnauthorized).JSON(err)
-// 	}
+func GetUserContact(c *fiber.Ctx) error {
+	ctx := context.Background()
+	userId, err := jwtauth.GetCurrentUserId(c)
+	queries := db.New(utils.Database)
 
-// 	utils.Database.Where("id=?", userId).First(&user)
+	contactId, err := strconv.Atoi(c.AllParams()["contactId"])
 
-// 	utils.Database.Model(&user).Association("Contacts").Find(&contacts)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(err)
+	}
 
-// 	return c.Status(fiber.StatusOK).JSON(contacts)
+	contact, err := queries.GetUserContact(ctx, db.GetUserContactParams{
+		CreatorID: int32(userId),
+		ID:        int32(contactId),
+	})
 
-// }
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(err)
+	}
 
-// func DeleteUserContact(c *fiber.Ctx) error {
-// 	var contact entities.Contact
-// 	contactId := c.AllParams()["contactId"]
+	return c.Status(fiber.StatusOK).JSON(contact)
+}
 
-// 	if contactId == "" {
-// 		return c.SendStatus(fiber.StatusBadRequest)
-// 	}
+func DeleteUserContact(c *fiber.Ctx) error {
+	ctx := context.Background()
+	userId, err := jwtauth.GetCurrentUserId(c)
+	queries := db.New(utils.Database)
 
-// 	user := new(entities.User)
-// 	userId, err := jwtauth.GetCurrentUserId(c)
+	contactId, err := strconv.Atoi(c.AllParams()["contactId"])
 
-// 	if err != nil {
-// 		return c.Status(fiber.StatusUnauthorized).JSON(err)
-// 	}
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(err)
+	}
 
-// 	utils.Database.Where("id=?", userId).First(&user)
-// 	utils.Database.Model(&user).Where("id=?", contactId).Association("Contacts").Find(&contact)
+	deletionError := queries.DeleteUserContact(ctx, db.DeleteUserContactParams{
+		CreatorID: int32(userId),
+		ID:        int32(contactId),
+	})
 
-// 	if contact.ID == 0 {
-// 		return c.SendStatus(fiber.StatusNotFound)
-// 	}
+	if deletionError != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(deletionError.Error())
+	}
 
-// 	utils.Database.Delete(&contact)
-
-// 	return c.SendStatus(fiber.StatusNoContent)
-// }
+	return c.SendStatus(fiber.StatusOK)
+}

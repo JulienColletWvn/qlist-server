@@ -34,6 +34,7 @@ type CreateUserParams struct {
 
 func Register(c *fiber.Ctx) error {
 	ctx := context.Background()
+	queries := db.New(utils.Database)
 	user := CreateUserParams{}
 
 	if err := c.BodyParser(&user); err != nil {
@@ -50,8 +51,6 @@ func Register(c *fiber.Ctx) error {
 	if err := utils.ValidateStruct(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
-
-	queries := db.New(utils.Database)
 
 	u, err := queries.CreateUser(ctx, db.CreateUserParams{
 		Username:  user.Username,

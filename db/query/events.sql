@@ -10,13 +10,14 @@ INSERT INTO events (
   )
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
--- name: DeleteEvent :exec
+-- name: DeleteAdministratorEvent :exec
 DELETE FROM events
 WHERE events.id = $1
   AND events.creator_id IN (
     SELECT events_administrators.users_id
     FROM events_administrators
     WHERE events_administrators.events_id = $1
+      AND events_administrators.users_id = $2
   );
 -- name: GetAdministratorEvent :one
 SELECT *
