@@ -1,4 +1,22 @@
--- name: CreateWalletType :one
+-- name: GetEventWalletsTypes :many
+SELECT *
+FROM wallets_types
+WHERE wallets_types.events_id IN (
+        SELECT events_administrators.events_id
+        FROM events_administrators
+        WHERE events_administrators.events_id = $1
+            AND events_administrators.users_id = $2
+    );
+-- name: GetEventWalletsType :one
+SELECT *
+FROM wallets_types
+WHERE wallets_types.id = $1
+    AND wallets_types.events_id IN (
+        SELECT events_administrators.events_id
+        FROM events_administrators
+        WHERE events_administrators.users_id = $2
+    );
+-- name: CreateEventWalletType :one
 INSERT INTO wallets_types (
         events_id,
         name,
@@ -9,7 +27,7 @@ INSERT INTO wallets_types (
     )
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
--- name: DeleteWalletType :exec
+-- name: DeleteEventWalletType :exec
 DELETE FROM wallets_types
 WHERE wallets_types.id = $1
     AND wallets_types.events_id IN (

@@ -34,11 +34,17 @@ func User(r fiber.Router) {
 	ticketsTypes.Post("/", userEvents.CreateUserEventTicketType)
 	ticketsTypes.Delete("/:ticketTypeId", userEvents.DeleteUserEventTicketType)
 
-	ticket := guests.Group("/:guestId/tickets")
-	ticket.Get("/", userEvents.GetGuestTickets)
-	ticket.Get("/:ticketId", userEvents.GetGuestTickets)
-	ticket.Post("/", userEvents.CreateGuestTicket)
-	ticket.Delete("/:ticketId", userEvents.DeleteGuestTicket)
+	tickets := guests.Group("/:guestId/tickets")
+	tickets.Get("/", userEvents.GetGuestTickets)
+	tickets.Get("/:ticketId", userEvents.GetGuestTickets)
+	tickets.Post("/", userEvents.CreateGuestTicket)
+	tickets.Delete("/:ticketId", userEvents.DeleteGuestTicket)
+
+	ticketTransactions := tickets.Group("/:ticketId/transactions")
+	ticketTransactions.Get("/", userEvents.GetGuestTicketTransactions)
+	ticketTransactions.Get("/:transactionId", userEvents.GetGuestTicketTransaction)
+	ticketTransactions.Post("/", userEvents.CreateGuestTicketTransaction)
+	ticketTransactions.Put("/:transactionId/status", userEvents.UpdateGuestTicketTransactionStatus)
 
 	cashiers := events.Group("/:eventId/cashiers")
 	cashiers.Get("/", userEvents.GetUserEventCashiers)
@@ -58,8 +64,17 @@ func User(r fiber.Router) {
 	stewards.Post("/", userEvents.CreateUserEventSteward)
 	stewards.Delete("/:stewardId", userEvents.DeleteUserEventSteward)
 
-	transactions := events.Group(("/:eventId/transactions"))
-	transactions.Get("/", userEvents.GetUserEventTransactions)
+	walletsTypes := events.Group("/:eventId/walletsTypes")
+	walletsTypes.Get("/", userEvents.GetUserEventWalletTypes)
+	walletsTypes.Get("/:walletTypeId", userEvents.GetUserEventWalletType)
+	walletsTypes.Post("/", userEvents.CreateUserEventWalletType)
+	walletsTypes.Delete("/:walletTypeId", userEvents.DeleteUserEventWalletType)
+
+	wallets := events.Group(":guestId/wallets")
+	wallets.Get("/", userEvents.GetGuestWallets)
+	wallets.Get("/:walletId", userEvents.GetGuestWallet)
+	wallets.Post("/", userEvents.CreateGuestWallet)
+	wallets.Delete("/:walletId", userEvents.DeleteGuestWallet)
 
 	statistics := events.Group(("/:eventId/statistics"))
 	statistics.Get("/", userEvents.GetUserEventStatistics)

@@ -57,6 +57,65 @@ func (q *Queries) DeleteGuestWallet(ctx context.Context, id int32) error {
 	return err
 }
 
+const getGuestWallet = `-- name: GetGuestWallet :one
+SELECT id, created_at, guests_id, wallets_type_id, token, balance
+FROM wallets
+WHERE wallets.guests_id = $1
+    AND wallets.id = $2
+`
+
+type GetGuestWalletParams struct {
+	GuestsID int32 `json:"guests_id"`
+	ID       int32 `json:"id"`
+}
+
+func (q *Queries) GetGuestWallet(ctx context.Context, arg GetGuestWalletParams) (Wallet, error) {
+	row := q.db.QueryRow(ctx, getGuestWallet, arg.GuestsID, arg.ID)
+	var i Wallet
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.GuestsID,
+		&i.WalletsTypeID,
+		&i.Token,
+		&i.Balance,
+	)
+	return i, err
+}
+
+const getGuestWallets = `-- name: GetGuestWallets :many
+SELECT id, created_at, guests_id, wallets_type_id, token, balance
+FROM wallets
+WHERE wallets.guests_id = $1
+`
+
+func (q *Queries) GetGuestWallets(ctx context.Context, guestsID int32) ([]Wallet, error) {
+	rows, err := q.db.Query(ctx, getGuestWallets, guestsID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Wallet
+	for rows.Next() {
+		var i Wallet
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.GuestsID,
+			&i.WalletsTypeID,
+			&i.Token,
+			&i.Balance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateGuestWalletBalance = `-- name: UpdateGuestWalletBalance :one
 UPDATE wallets
 SET balance = $1

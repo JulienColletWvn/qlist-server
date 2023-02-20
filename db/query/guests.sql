@@ -23,7 +23,7 @@ WHERE guests.id = $1
         WHERE events_administrators.events_id = $2
             AND events_administrators.users_id = $3
     );
--- name: GetUserEventGuests :one
+-- name: GetUserEventGuests :many
 SELECT *
 FROM guests
 WHERE guests.events_id IN (

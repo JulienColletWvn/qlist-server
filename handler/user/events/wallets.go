@@ -2,20 +2,24 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	db "qlist/db/sqlc"
 	jwtauth "qlist/middleware"
 	"qlist/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
-type CreateGuestTicketBody struct {
-	GuestID      int `json:"guestId"`
-	TicketTypeID int `json:"ticketTypeId"`
+type CreateGuestWalletBody struct {
+	GuestID      int  `json:"guestId"`
+	WalletTypeID int  `json:"walletTypeId"`
+	MaxAmount    int  `json:"maxAmount"`
+	OnlineReload bool `json:"onlineReload"`
 }
 
-func GetGuestTicket(c *fiber.Ctx) error {
+func GetGuestWallet(c *fiber.Ctx) error {
 	ctx := context.Background()
 	queries := db.New(utils.Database)
 
@@ -31,7 +35,7 @@ func GetGuestTicket(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 
-	ticketId, err := strconv.Atoi(c.AllParams()["ticketId"])
+	walletId, err := strconv.Atoi(c.AllParams()["walletId"])
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
@@ -44,19 +48,19 @@ func GetGuestTicket(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(err)
 	}
 
-	guestTicket, err := queries.GetGuestTicket(ctx, db.GetGuestTicketParams{
+	guestWallet, err := queries.GetGuestWallet(ctx, db.GetGuestWalletParams{
 		GuestsID: int32(guestId),
-		ID:       int32(ticketId),
+		ID:       int32(walletId),
 	})
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(guestTicket)
+	return c.Status(fiber.StatusOK).JSON(guestWallet)
 }
 
-func GetGuestTickets(c *fiber.Ctx) error {
+func GetGuestWallets(c *fiber.Ctx) error {
 	ctx := context.Background()
 	queries := db.New(utils.Database)
 
@@ -79,19 +83,19 @@ func GetGuestTickets(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(err)
 	}
 
-	guestTickets, err := queries.GetGuestTickets(ctx, int32(guestId))
+	guestWallets, err := queries.GetGuestWallets(ctx, int32(guestId))
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(guestTickets)
+	return c.Status(fiber.StatusOK).JSON(guestWallets)
 }
 
-func CreateGuestTicket(c *fiber.Ctx) error {
+func CreateGuestWallet(c *fiber.Ctx) error {
 	ctx := context.Background()
 	queries := db.New(utils.Database)
-	body := CreateGuestTicketBody{}
+	body := CreateGuestWalletBody{}
 
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
@@ -116,9 +120,14 @@ func CreateGuestTicket(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(err)
 	}
 
-	ticket, creationError := queries.CreateGuestTicket(ctx, db.CreateGuestTicketParams{
-		TicketsTypeID: int32(body.TicketTypeID),
+	ticket, creationError := queries.CreateGuestWallet(ctx, db.CreateGuestWalletParams{
 		GuestsID:      int32(body.GuestID),
+		WalletsTypeID: int32(body.WalletTypeID),
+		Token:         uuid.NewString(),
+		Balance: sql.NullInt32{
+			Int32: 0,
+			Valid: true,
+		},
 	})
 
 	if creationError != nil {
@@ -128,7 +137,7 @@ func CreateGuestTicket(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(ticket)
 }
 
-func DeleteGuestTicket(c *fiber.Ctx) error {
+func DeleteGuestWallet(c *fiber.Ctx) error {
 	ctx := context.Background()
 	queries := db.New(utils.Database)
 
@@ -138,7 +147,7 @@ func DeleteGuestTicket(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 
-	ticketId, err := strconv.Atoi(c.AllParams()["ticketId"])
+	walletId, err := strconv.Atoi(c.AllParams()["walletId"])
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
@@ -157,7 +166,7 @@ func DeleteGuestTicket(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(err)
 	}
 
-	deletionError := queries.DeleteGuestTicket(ctx, int32(ticketId))
+	deletionError := queries.DeleteGuestWallet(ctx, int32(walletId))
 
 	if deletionError != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)

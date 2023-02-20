@@ -58,6 +58,6 @@ func Login(c *fiber.Ctx) error {
 
 	c.Cookie(&cookie)
 
-	return c.Status(fiber.StatusOK).SendString(token)
+	return c.SendStatus(fiber.StatusNoContent)
 
 }

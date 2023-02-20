@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const createTicketTransaction = `-- name: CreateTicketTransaction :one
+const createGuestTicketTransaction = `-- name: CreateGuestTicketTransaction :one
 INSERT INTO tickets_transactions (
         tickets_id,
         stewards_id,
@@ -20,15 +20,15 @@ VALUES ($1, $2, $3, $4)
 RETURNING id, created_at, tickets_id, stewards_id, amount, status
 `
 
-type CreateTicketTransactionParams struct {
+type CreateGuestTicketTransactionParams struct {
 	TicketsID  int32             `json:"tickets_id"`
 	StewardsID int32             `json:"stewards_id"`
 	Amount     int32             `json:"amount"`
 	Status     TransactionStatus `json:"status"`
 }
 
-func (q *Queries) CreateTicketTransaction(ctx context.Context, arg CreateTicketTransactionParams) (TicketsTransaction, error) {
-	row := q.db.QueryRow(ctx, createTicketTransaction,
+func (q *Queries) CreateGuestTicketTransaction(ctx context.Context, arg CreateGuestTicketTransactionParams) (TicketsTransaction, error) {
+	row := q.db.QueryRow(ctx, createGuestTicketTransaction,
 		arg.TicketsID,
 		arg.StewardsID,
 		arg.Amount,
@@ -46,20 +46,79 @@ func (q *Queries) CreateTicketTransaction(ctx context.Context, arg CreateTicketT
 	return i, err
 }
 
-const updateTicketTransactionStatus = `-- name: UpdateTicketTransactionStatus :one
+const getGuestTicketTransaction = `-- name: GetGuestTicketTransaction :one
+SELECT id, created_at, tickets_id, stewards_id, amount, status
+FROM tickets_transactions
+WHERE tickets_id = $1
+    and id = $2
+`
+
+type GetGuestTicketTransactionParams struct {
+	TicketsID int32 `json:"tickets_id"`
+	ID        int32 `json:"id"`
+}
+
+func (q *Queries) GetGuestTicketTransaction(ctx context.Context, arg GetGuestTicketTransactionParams) (TicketsTransaction, error) {
+	row := q.db.QueryRow(ctx, getGuestTicketTransaction, arg.TicketsID, arg.ID)
+	var i TicketsTransaction
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.TicketsID,
+		&i.StewardsID,
+		&i.Amount,
+		&i.Status,
+	)
+	return i, err
+}
+
+const getGuestTicketTransactions = `-- name: GetGuestTicketTransactions :many
+SELECT id, created_at, tickets_id, stewards_id, amount, status
+FROM tickets_transactions
+WHERE tickets_id = $1
+`
+
+func (q *Queries) GetGuestTicketTransactions(ctx context.Context, ticketsID int32) ([]TicketsTransaction, error) {
+	rows, err := q.db.Query(ctx, getGuestTicketTransactions, ticketsID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TicketsTransaction
+	for rows.Next() {
+		var i TicketsTransaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.TicketsID,
+			&i.StewardsID,
+			&i.Amount,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateGuestTicketTransactionStatus = `-- name: UpdateGuestTicketTransactionStatus :one
 UPDATE tickets_transactions
 SET status = $1
 WHERE tickets_transactions.id = $2
 RETURNING id, created_at, tickets_id, stewards_id, amount, status
 `
 
-type UpdateTicketTransactionStatusParams struct {
+type UpdateGuestTicketTransactionStatusParams struct {
 	Status TransactionStatus `json:"status"`
 	ID     int32             `json:"id"`
 }
 
-func (q *Queries) UpdateTicketTransactionStatus(ctx context.Context, arg UpdateTicketTransactionStatusParams) (TicketsTransaction, error) {
-	row := q.db.QueryRow(ctx, updateTicketTransactionStatus, arg.Status, arg.ID)
+func (q *Queries) UpdateGuestTicketTransactionStatus(ctx context.Context, arg UpdateGuestTicketTransactionStatusParams) (TicketsTransaction, error) {
+	row := q.db.QueryRow(ctx, updateGuestTicketTransactionStatus, arg.Status, arg.ID)
 	var i TicketsTransaction
 	err := row.Scan(
 		&i.ID,

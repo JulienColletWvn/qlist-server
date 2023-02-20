@@ -1,3 +1,12 @@
+-- name: GetGuestWallets :many
+SELECT *
+FROM wallets
+WHERE wallets.guests_id = $1;
+-- name: GetGuestWallet :one
+SELECT *
+FROM wallets
+WHERE wallets.guests_id = $1
+    AND wallets.id = $2;
 -- name: CreateGuestWallet :one
 INSERT INTO wallets (
         guests_id,

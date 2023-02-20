@@ -93,7 +93,7 @@ func (q *Queries) GetUserEventGuest(ctx context.Context, arg GetUserEventGuestPa
 	return i, err
 }
 
-const getUserEventGuests = `-- name: GetUserEventGuests :one
+const getUserEventGuests = `-- name: GetUserEventGuests :many
 SELECT id, created_at, updated_at, note, events_id, contacts_id
 FROM guests
 WHERE guests.events_id IN (
@@ -109,16 +109,29 @@ type GetUserEventGuestsParams struct {
 	UsersID  int32 `json:"users_id"`
 }
 
-func (q *Queries) GetUserEventGuests(ctx context.Context, arg GetUserEventGuestsParams) (Guest, error) {
-	row := q.db.QueryRow(ctx, getUserEventGuests, arg.EventsID, arg.UsersID)
-	var i Guest
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Note,
-		&i.EventsID,
-		&i.ContactsID,
-	)
-	return i, err
+func (q *Queries) GetUserEventGuests(ctx context.Context, arg GetUserEventGuestsParams) ([]Guest, error) {
+	rows, err := q.db.Query(ctx, getUserEventGuests, arg.EventsID, arg.UsersID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Guest
+	for rows.Next() {
+		var i Guest
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Note,
+			&i.EventsID,
+			&i.ContactsID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
